@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.*;
 
 import com.example.decathlon.deca.*;
+import com.example.decathlon.heptathlon.*;
 
 
 public class MainGUI {
@@ -37,9 +38,11 @@ public class MainGUI {
 
         // Dropdown for selecting discipline
         String[] disciplines = {
-                "100m", "400m", "1500m", "110m Hurdles",
-                "Long Jump", "High Jump", "Pole Vault",
-                "Discus Throw", "Javelin Throw", "Shot Put"
+                "Deca_100m", "Deca_400m", "Deca_1500m", "Deca_110m Hurdles",
+                "Deca_Long Jump", "Deca_High Jump", "Deca_Pole Vault",
+                "Deca_Discus Throw", "Deca_Javelin Throw", "Deca_Shot Put",
+                "Hep_100mHurdles", "Hep_200m", "Hep_800m", "Hep_Hight_Jump",
+                "Hep_JavelinThrow", "Hep_LongJump", "Hep_ShotPut"
         };
         disciplineBox = new JComboBox<>(disciplines);
         panel.add(new JLabel("Select Discipline:"));
@@ -77,46 +80,76 @@ public class MainGUI {
 
                 int score = 0;
                 switch (discipline) {
-                    case "100m":
+                    case "Deca_100m":
                         Deca100M deca100M = new Deca100M();
                         score = deca100M.calculateResult(result);
                         break;
-                    case "400m":
+                    case "Deca_400m":
                         Deca400M deca400M = new Deca400M();
                         score = deca400M.calculateResult(result);
                         break;
-                    case "1500m":
+                    case "Deca_1500m":
                         Deca1500M deca1500M = new Deca1500M();
                         score = deca1500M.calculateResult(result);
                         break;
-                    case "110m Hurdles":
+                    case "Deca_110m Hurdles":
                         Deca110MHurdles deca110MHurdles = new Deca110MHurdles();
                         score = deca110MHurdles.calculateResult(result);
                         break;
-                    case "Long Jump":
+                    case "Deca_Long Jump":
                         DecaLongJump decaLongJump = new DecaLongJump();
                         score = decaLongJump.calculateResult(result);
                         break;
-                    case "High Jump":
+                    case "Deca_High Jump":
                         DecaHighJump decaHighJump = new DecaHighJump();
                         score = decaHighJump.calculateResult(result);
                         break;
-                    case "Pole Vault":
+                    case "Deca_Pole Vault":
                         DecaPoleVault decaPoleVault = new DecaPoleVault();
                         score = decaPoleVault.calculateResult(result);
                         break;
-                    case "Discus Throw":
+                    case "Deca_Discus Throw":
                         DecaDiscusThrow decaDiscusThrow = new DecaDiscusThrow();
                         score = decaDiscusThrow.calculateResult(result);
                         break;
-                    case "Javelin Throw":
+                    case "Deca_Javelin Throw":
                         DecaJavelinThrow decaJavelinThrow = new DecaJavelinThrow();
                         score = decaJavelinThrow.calculateResult(result);
                         break;
-                    case "Shot Put":
+                    case "Deca_Shot Put":
                         DecaShotPut decaShotPut = new DecaShotPut();
                         score = decaShotPut.calculateResult(result);
                         break;
+                    case "Hep_100mHurdles":
+                        Hep100MHurdles hep100MHurdles = new Hep100MHurdles();
+                        score = hep100MHurdles.calculateResult(result);
+                        break;
+                    case "Hep_200m":
+                        Hep200M hep200M=new Hep200M();
+                        score = hep200M.calculateResult(result);
+                        break;
+                    case "Hep_800m":
+                        Hep800M hep800M=new Hep800M();
+                        score = hep800M.calculateResult(result);
+                        break;
+                    case "Hep_HightJump":
+                        HeptHightJump heptHightJump=new HeptHightJump();
+                        score = heptHightJump.calculateResult(result);
+                        break;
+                    case "Hep_JavelinThrow":
+                        HeptJavelinThrow heptJavelinThrow=new HeptJavelinThrow();
+                        score = heptJavelinThrow.calculateResult(result);
+                        break;
+                    case "Hep_LongJump":
+                        HeptLongJump heptLongJump=new HeptLongJump();
+                        score = heptLongJump.calculateResult(result);
+                        break;
+                    case "Hep_ShotPut":
+                        HeptShotPut heptShotPut=new HeptShotPut();
+                        score = heptShotPut.calculateResult(result);
+                        break;
+
+
                 }
 
                 outputArea.append("Competitor: " + name + "\n");
