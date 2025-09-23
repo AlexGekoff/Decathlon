@@ -8,6 +8,10 @@ import java.awt.event.ActionListener;
 
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.example.decathlon.deca.*;
 import com.example.decathlon.heptathlon.*;
@@ -19,6 +23,8 @@ public class MainGUI {
     private JTextField resultField;
     private JComboBox<String> disciplineBox;
     private JTextArea outputArea;
+
+    private Map<String, Competitor> competitors = new HashMap<>();
 
     public static void main(String[] args) {
         new MainGUI().createAndShowGUI();
@@ -151,13 +157,36 @@ public class MainGUI {
 
 
                 }
+                // Update or add competitor to the map
 
-                outputArea.append("Competitor: " + name + "\n");
-                outputArea.append("Discipline: " + discipline + "\n");
-                outputArea.append("Result: " + result + "\n");
-                outputArea.append("Score: " + score + "\n\n");
+                Competitor competitor = competitors.getOrDefault(name, new Competitor(name));
+                competitor.addScore(discipline, result, score);
+                competitors.put(name, competitor);
+
+                // Sort all competitors by total score in descending order
+                List<Competitor> sortedCompetitors = new ArrayList<>(competitors.values());
+                sortedCompetitors.sort((c1, c2) -> Integer.compare(c2.getTotalScore(), c1.getTotalScore()));
+
+                // Build the output string showing ranking, total score, and scores per event
+                StringBuilder output = new StringBuilder();
+                int rank = 1;
+                for (Competitor c : sortedCompetitors) {
+                    output.append(rank).append(". ").append(c.getName())
+                            .append(" - Total Score: ").append(c.getTotalScore()).append("\n");
+                    for (Map.Entry<String,Competitor.DisciplineResult> entry : c.getResults().entrySet()) {
+                        output.append("   ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                    }
+                    output.append("\n");
+                    rank++;
+                }
+
+                // Display the results in the output area
+                outputArea.setText(output.toString());
+
             } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "Please enter a valid number for the result.", "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                // Show error message if result input is not a valid number
+                JOptionPane.showMessageDialog(null, "Please enter a valid number for the result.",
+                        "Invalid Input", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
