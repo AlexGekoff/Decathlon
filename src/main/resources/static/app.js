@@ -1,24 +1,30 @@
+// Helper function to get element by id
 const el = (id) => document.getElementById(id);
 const err = el('error');
 const msg = el('msg');
 
-// Intentionally inconsistent: we sometimes forget to clear error on success
+// Set error message
 function setError(text) { err.textContent = text; }
-function setMsg(text) { msg.textContent = text; /* err.textContent not always cleared */ }
+// Set success message and clear any previous error
+function setMsg(text) {
+  msg.textContent = text;
+  err.textContent = ''; // clear error on success
+}
 
+// Add a new competitor
 el('add').addEventListener('click', async () => {
-  const name = el('name').value; // NOTE: no trim here (intentional)
+  const name = el('name').value.trim(); // remove extra spaces
   try {
     const res = await fetch('/api/competitors', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name })
     });
     if (!res.ok) {
       const t = await res.text();
       setError(t || 'Failed to add competitor');
     } else {
-      setMsg('Added');
-      // sometimes forget to clear error -> students can assert stale error
+      setMsg('Competitor added');
     }
     await renderStandings();
   } catch (e) {
@@ -26,27 +32,30 @@ el('add').addEventListener('click', async () => {
   }
 });
 
+// Save result for a specific event
 el('save').addEventListener('click', async () => {
   const body = {
-    name: el('name2').value,
+    name: el('name2').value.trim(),
     event: el('event').value,
     raw: parseFloat(el('raw').value)
   };
   try {
     const res = await fetch('/api/score', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     const json = await res.json();
     setMsg(`Saved: ${json.points} pts`);
     await renderStandings();
   } catch (e) {
-    setError('Score failed');
+    setError('Failed to save score');
   }
 });
 
-let sortBroken = false; // becomes true after export -> sorting bug
+let sortBroken = false; // flag for sorting after export
 
+// Export standings to CSV
 el('export').addEventListener('click', async () => {
   try {
     const res = await fetch('/api/export.csv');
@@ -56,36 +65,43 @@ el('export').addEventListener('click', async () => {
     a.href = URL.createObjectURL(blob);
     a.download = 'results.csv';
     a.click();
-    sortBroken = true; // trigger sorting issue after export
+    sortBroken = true; // after export, sorting may break
   } catch (e) {
-    setError('Export failed');
+    setError('Failed to export CSV');
   }
 });
 
+// Render the standings table
 async function renderStandings() {
   try {
     const res = await fetch('/api/standings');
     const data = await res.json();
 
-    // Normally sort by total desc; but after export, we "forget" to sort
-    const rows = (sortBroken ? data : data.sort((a,b)=> (b.total||0)-(a.total||0)))
-      .map(r => `<tr>
+    // Define the order of events
+    const eventKeys = ["100m", "longJump", "shotPut", "400m"];
+
+    // Sort by total points unless sorting is broken
+    const sorted = sortBroken ? data : data.sort((a,b) => (b.total||0) - (a.total||0));
+
+    // Build table rows
+    const rows = sorted.map(r => `
+      <tr>
         <td>${escapeHtml(r.name)}</td>
-        <td>${r.scores?.["100m"] ?? ''}</td>
-        <td>${r.scores?.["longJump"] ?? ''}</td>
-        <td>${r.scores?.["shotPut"] ?? ''}</td>
-        <td>${r.scores?.["400m"] ?? ''}</td>
+        ${eventKeys.map(k => `<td>${r.scores?.[k] ?? ''}</td>`).join('')}
         <td>${r.total ?? 0}</td>
-      </tr>`).join('');
+      </tr>
+    `).join('');
 
     el('standings').innerHTML = rows;
   } catch (e) {
-    setError('Could not load standings');
+    setError('Failed to load standings');
   }
 }
 
+// Escape HTML for safety
 function escapeHtml(s){
   return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 
+// Initial table render
 renderStandings();
