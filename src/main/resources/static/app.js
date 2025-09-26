@@ -78,7 +78,8 @@ async function renderStandings() {
     const data = await res.json();
 
     // Define the order of events
-    const eventKeys = ["100m", "longJump", "shotPut", "400m"];
+    const eventKeys = ["Hep200m","Hep800m", "Hep100mHurdles", "HepHighJump",
+    "HepLongJump", "HepShotPut", "HepJavelinThrow", "1500m", "JavelinThrow","PoleVault", "DiscusThrow", "110mHurdles", "highJump", "100m", "longJump", "shotPut", "400m"];
 
     // Sort by total points unless sorting is broken
     const sorted = sortBroken ? data : data.sort((a,b) => (b.total||0) - (a.total||0));
