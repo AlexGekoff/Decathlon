@@ -22,9 +22,22 @@ public class MainGUI {
     private JTextField nameField;
     private JTextField resultField;
     private JComboBox<String> disciplineBox;
+
     private JTextArea outputArea;
+    private JComboBox<String> disciplineCategoryBox;
 
     private Map<String, Competitor> competitors = new HashMap<>();
+
+    private final String[] decathlonDisciplines = {
+            "Deca_100m", "Deca_400m", "Deca_1500m", "Deca_110m Hurdles",
+            "Deca_Long Jump", "Deca_High Jump", "Deca_Pole Vault",
+            "Deca_Discus Throw", "Deca_Javelin Throw", "Deca_Shot Put"
+    };
+
+    private final String[] heptathlonDisciplines = {
+            "Hep_100mHurdles", "Hep_200m", "Hep_800m", "Hep_HightJump",
+            "Hep_JavelinThrow", "Hep_LongJump", "Hep_ShotPut"
+    };
 
     public static void main(String[] args) {
         new MainGUI().createAndShowGUI();
@@ -35,31 +48,51 @@ public class MainGUI {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(500, 400);
 
-        JPanel panel = new JPanel(new GridLayout(6, 1));
+        JPanel panel = new JPanel(new GridLayout(7, 1)); // 7 rader för alla komponenter
 
-        // Input for competitor's name
+        // Input för tävlandes namn
         nameField = new JTextField(20);
         panel.add(new JLabel("Enter Competitor's Name:"));
         panel.add(nameField);
 
-        // Dropdown for selecting discipline
-        String[] disciplines = {
-                "Deca_100m", "Deca_400m", "Deca_1500m", "Deca_110m Hurdles",
-                "Deca_Long Jump", "Deca_High Jump", "Deca_Pole Vault",
-                "Deca_Discus Throw", "Deca_Javelin Throw", "Deca_Shot Put",
-                "Hep_100mHurdles", "Hep_200m", "Hep_800m", "Hep_Hight_Jump",
-                "Hep_JavelinThrow", "Hep_LongJump", "Hep_ShotPut"
-        };
-        disciplineBox = new JComboBox<>(disciplines);
+        // Dropdown för att välja disciplin-kategori (tom som start)
+        String[] categories = {"", "Decathlon", "Heptathlon"}; // tom sträng först
+        disciplineCategoryBox = new JComboBox<>(categories);
         panel.add(new JLabel("Select Discipline:"));
+        panel.add(disciplineCategoryBox);
+
+        // Dropdown för grenarna (disciplineBox) – börjar tom
+        disciplineBox = new JComboBox<>();
+        panel.add(new JLabel("Select Event:"));
         panel.add(disciplineBox);
 
-        // Input for result
+        // När kategori ändras -> uppdatera grenlistan
+        disciplineCategoryBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String selectedCategory = (String) disciplineCategoryBox.getSelectedItem();
+                disciplineBox.removeAllItems(); //// töm listan
+
+                disciplineBox.addItem("");
+
+                if ("Decathlon".equals(selectedCategory)) {
+                    for (String d : decathlonDisciplines) {
+                        disciplineBox.addItem(d);
+                    }
+                } else if ("Heptathlon".equals(selectedCategory)) {
+                    for (String d : heptathlonDisciplines) {
+                        disciplineBox.addItem(d);
+                    }
+                }
+            }
+        });
+
+        // Input för resultat
         resultField = new JTextField(10);
         panel.add(new JLabel("Enter Result:"));
         panel.add(resultField);
 
-        // Button to calculate and display result
+        // Knapp för att räkna ut resultat
         JButton calculateButton = new JButton("Calculate Score");
         calculateButton.addActionListener(new CalculateButtonListener());
         panel.add(calculateButton);
@@ -73,6 +106,8 @@ public class MainGUI {
         frame.add(panel);
         frame.setVisible(true);
     }
+
+
 
     private class CalculateButtonListener implements ActionListener {
         @Override
