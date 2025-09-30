@@ -8,7 +8,7 @@ public class Deca1500M {
 	private int score;
 	private double A = 0.03768;
 	private double B = 480;
-	private double C = 18.5;
+	private double C = 1.85;
 	boolean active = true;
 
 	CalcTrackAndField calc = new CalcTrackAndField();
