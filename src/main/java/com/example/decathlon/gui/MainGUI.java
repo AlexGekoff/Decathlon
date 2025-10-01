@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.example.decathlon.common.ValidationUtil;
 import com.example.decathlon.deca.*;
 import com.example.decathlon.heptathlon.*;
 
@@ -120,109 +121,112 @@ public class MainGUI {
                 double result = Double.parseDouble(resultText);
 
                 int score = 0;
+
                 switch (discipline) {
                     case "Deca_100m":
-                        Deca100M deca100M = new Deca100M();
-                        score = deca100M.calculateResult(result);
+                        ValidationUtil.validateResult("Deca 100m", result, 5, 17.8);
+                        score = new Deca100M().calculateResult(result);
                         break;
                     case "Deca_400m":
-                        Deca400M deca400M = new Deca400M();
-                        score = deca400M.calculateResult(result);
+                        ValidationUtil.validateResult("Deca 400m", result, 20, 100);
+                        score = new Deca400M().calculateResult(result);
                         break;
                     case "Deca_1500m":
-                        Deca1500M deca1500M = new Deca1500M();
-                        score = deca1500M.calculateResult(result);
+                        ValidationUtil.validateResult("Deca 1500m", result, 2, 7);
+                        score = new Deca1500M().calculateResult(result);
                         break;
                     case "Deca_110m Hurdles":
-                        Deca110MHurdles deca110MHurdles = new Deca110MHurdles();
-                        score = deca110MHurdles.calculateResult(result);
+                        ValidationUtil.validateResult("Deca 110m Hurdles", result, 10, 28.5);
+                        score = new Deca110MHurdles().calculateResult(result);
                         break;
                     case "Deca_Long Jump":
-                        DecaLongJump decaLongJump = new DecaLongJump();
-                        score = decaLongJump.calculateResult(result);
+                        ValidationUtil.validateResult("Deca Long Jump", result, 250, 1000);
+                        score = new DecaLongJump().calculateResult(result);
                         break;
                     case "Deca_High Jump":
-                        DecaHighJump decaHighJump = new DecaHighJump();
-                        score = decaHighJump.calculateResult(result);
+                        ValidationUtil.validateResult("Deca High Jump", result, 0, 100);
+                        score = new DecaHighJump().calculateResult(result);
                         break;
                     case "Deca_Pole Vault":
-                        DecaPoleVault decaPoleVault = new DecaPoleVault();
-                        score = decaPoleVault.calculateResult(result);
+                        ValidationUtil.validateResult("Deca Pole Vault", result, 2, 1000);
+                        score = new DecaPoleVault().calculateResult(result);
                         break;
                     case "Deca_Discus Throw":
-                        DecaDiscusThrow decaDiscusThrow = new DecaDiscusThrow();
-                        score = decaDiscusThrow.calculateResult(result);
+                        ValidationUtil.validateResult("Deca Discus Throw", result, 0, 110);
+                        score = new DecaDiscusThrow().calculateResult(result);
                         break;
                     case "Deca_Javelin Throw":
-                        DecaJavelinThrow decaJavelinThrow = new DecaJavelinThrow();
-                        score = decaJavelinThrow.calculateResult(result);
+                        ValidationUtil.validateResult("Deca Javelin Throw", result, 30, 90);
+                        score = new DecaJavelinThrow().calculateResult(result);
                         break;
                     case "Deca_Shot Put":
-                        DecaShotPut decaShotPut = new DecaShotPut();
-                        score = decaShotPut.calculateResult(result);
+                        ValidationUtil.validateResult("Deca Shot Put", result, 0, 30);
+                        score = new DecaShotPut().calculateResult(result);
                         break;
                     case "Hep_100mHurdles":
-                        Hep100MHurdles hep100MHurdles = new Hep100MHurdles();
-                        score = hep100MHurdles.calculateResult(result);
+                        ValidationUtil.validateResult("Hep 100m Hurdles", result, 5, 26.4);
+                        score = new Hep100MHurdles().calculateResult(result);
                         break;
                     case "Hep_200m":
-                        Hep200M hep200M=new Hep200M();
-                        score = hep200M.calculateResult(result);
+                        ValidationUtil.validateResult("Hep 200m", result, 14, 42.08);
+                        score = new Hep200M().calculateResult(result);
                         break;
                     case "Hep_800m":
-                        Hep800M hep800M=new Hep800M();
-                        score = hep800M.calculateResult(result);
+                        ValidationUtil.validateResult("Hep 800m", result, 70, 250.79);
+                        score = new Hep800M().calculateResult(result);
                         break;
                     case "Hep_HightJump":
-                        HeptHightJump heptHightJump=new HeptHightJump();
-                        score = heptHightJump.calculateResult(result);
+                        ValidationUtil.validateResult("Hep High Jump", result, 75.7,270);
+                        score = new HeptHightJump().calculateResult(result);
                         break;
                     case "Hep_JavelinThrow":
-                        HeptJavelinThrow heptJavelinThrow=new HeptJavelinThrow();
-                        score = heptJavelinThrow.calculateResult(result);
+                        ValidationUtil.validateResult("Hep Javelin Throw", result, 0, 100);
+                        score = new HeptJavelinThrow().calculateResult(result);
                         break;
                     case "Hep_LongJump":
-                        HeptLongJump heptLongJump=new HeptLongJump();
-                        score = heptLongJump.calculateResult(result);
+                        ValidationUtil.validateResult("Hep Long Jump", result, 0, 400);
+                        score = new HeptLongJump().calculateResult(result);
                         break;
                     case "Hep_ShotPut":
-                        HeptShotPut heptShotPut=new HeptShotPut();
-                        score = heptShotPut.calculateResult(result);
+                        ValidationUtil.validateResult("Hep Shot Put", result, 5, 100);
+                        score = new HeptShotPut().calculateResult(result);
                         break;
-
-
                 }
-                // Update or add competitor to the map
 
+                // Update or add competitor
                 Competitor competitor = competitors.getOrDefault(name, new Competitor(name));
                 competitor.addScore(discipline, result, score);
                 competitors.put(name, competitor);
 
-                // Sort all competitors by total score in descending order
+                // Sort competitors
                 List<Competitor> sortedCompetitors = new ArrayList<>(competitors.values());
                 sortedCompetitors.sort((c1, c2) -> Integer.compare(c2.getTotalScore(), c1.getTotalScore()));
 
-                // Build the output string showing ranking, total score, and scores per event
+                // Build output
                 StringBuilder output = new StringBuilder();
                 int rank = 1;
                 for (Competitor c : sortedCompetitors) {
                     output.append(rank).append(". ").append(c.getName())
                             .append(" - Total Score: ").append(c.getTotalScore()).append("\n");
-                    for (Map.Entry<String,Competitor.DisciplineResult> entry : c.getResults().entrySet()) {
+                    for (Map.Entry<String, Competitor.DisciplineResult> entry : c.getResults().entrySet()) {
                         output.append("   ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
                     }
                     output.append("\n");
                     rank++;
                 }
 
-                // Display the results in the output area
                 outputArea.setText(output.toString());
 
             } catch (NumberFormatException ex) {
-                // Show error message if result input is not a valid number
-                JOptionPane.showMessageDialog(null, "Please enter a valid number for the result.",
-                        "Invalid Input", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(null,
+                        "Please enter a valid number for the result.",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+            } catch (IllegalArgumentException ex) {
+                JOptionPane.showMessageDialog(null,
+                        ex.getMessage(),
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
-    }
-}
+    }}
