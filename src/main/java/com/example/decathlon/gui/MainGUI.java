@@ -124,7 +124,7 @@ public class MainGUI {
 
                 switch (discipline) {
                     case "Deca_100m":
-                        ValidationUtil.validateResult("Deca 100m", result, 5, 17.8);
+                        ValidationUtil.validateResult("Deca 100m", result, 5, 20);
                         score = new Deca100M().calculateResult(result);
                         break;
                     case "Deca_400m":
@@ -132,31 +132,31 @@ public class MainGUI {
                         score = new Deca400M().calculateResult(result);
                         break;
                     case "Deca_1500m":
-                        ValidationUtil.validateResult("Deca 1500m", result, 2, 7);
+                        ValidationUtil.validateResult("Deca 1500m", result, 150, 400);
                         score = new Deca1500M().calculateResult(result);
                         break;
                     case "Deca_110m Hurdles":
-                        ValidationUtil.validateResult("Deca 110m Hurdles", result, 10, 28.5);
+                        ValidationUtil.validateResult("Deca 110m Hurdles", result, 10, 30);
                         score = new Deca110MHurdles().calculateResult(result);
                         break;
                     case "Deca_Long Jump":
-                        ValidationUtil.validateResult("Deca Long Jump", result, 250, 1000);
+                        ValidationUtil.validateResult("Deca Long Jump", result, 0, 1000);
                         score = new DecaLongJump().calculateResult(result);
                         break;
                     case "Deca_High Jump":
-                        ValidationUtil.validateResult("Deca High Jump", result, 0, 100);
+                        ValidationUtil.validateResult("Deca High Jump", result, 0, 300);
                         score = new DecaHighJump().calculateResult(result);
                         break;
                     case "Deca_Pole Vault":
-                        ValidationUtil.validateResult("Deca Pole Vault", result, 2, 1000);
+                        ValidationUtil.validateResult("Deca Pole Vault", result, 0, 1000);
                         score = new DecaPoleVault().calculateResult(result);
                         break;
                     case "Deca_Discus Throw":
-                        ValidationUtil.validateResult("Deca Discus Throw", result, 0, 110);
+                        ValidationUtil.validateResult("Deca Discus Throw", result, 0, 85);
                         score = new DecaDiscusThrow().calculateResult(result);
                         break;
                     case "Deca_Javelin Throw":
-                        ValidationUtil.validateResult("Deca Javelin Throw", result, 30, 90);
+                        ValidationUtil.validateResult("Deca Javelin Throw", result, 0, 110);
                         score = new DecaJavelinThrow().calculateResult(result);
                         break;
                     case "Deca_Shot Put":
@@ -164,31 +164,31 @@ public class MainGUI {
                         score = new DecaShotPut().calculateResult(result);
                         break;
                     case "Hep_100mHurdles":
-                        ValidationUtil.validateResult("Hep 100m Hurdles", result, 5, 26.4);
+                        ValidationUtil.validateResult("Hep 100m Hurdles", result, 10, 30);
                         score = new Hep100MHurdles().calculateResult(result);
                         break;
                     case "Hep_200m":
-                        ValidationUtil.validateResult("Hep 200m", result, 14, 42.08);
+                        ValidationUtil.validateResult("Hep 200m", result, 20, 100);
                         score = new Hep200M().calculateResult(result);
                         break;
                     case "Hep_800m":
-                        ValidationUtil.validateResult("Hep 800m", result, 70, 250.79);
+                        ValidationUtil.validateResult("Hep 800m", result, 70, 250);
                         score = new Hep800M().calculateResult(result);
                         break;
                     case "Hep_HightJump":
-                        ValidationUtil.validateResult("Hep High Jump", result, 75.7,270);
+                        ValidationUtil.validateResult("Hep High Jump", result, 0,300);
                         score = new HeptHightJump().calculateResult(result);
                         break;
                     case "Hep_JavelinThrow":
-                        ValidationUtil.validateResult("Hep Javelin Throw", result, 0, 100);
+                        ValidationUtil.validateResult("Hep Javelin Throw", result, 0, 110);
                         score = new HeptJavelinThrow().calculateResult(result);
                         break;
                     case "Hep_LongJump":
-                        ValidationUtil.validateResult("Hep Long Jump", result, 0, 400);
+                        ValidationUtil.validateResult("Hep Long Jump", result, 0, 1000);
                         score = new HeptLongJump().calculateResult(result);
                         break;
                     case "Hep_ShotPut":
-                        ValidationUtil.validateResult("Hep Shot Put", result, 5, 100);
+                        ValidationUtil.validateResult("Hep Shot Put", result, 0, 30);
                         score = new HeptShotPut().calculateResult(result);
                         break;
                 }
