@@ -44,10 +44,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/standings');
       const data = await res.json();
 
-      const rows = data.map(c => `
+      if (!data.length) {
+        el('standings').innerHTML = '<tr><td colspan="2">No competitors yet</td></tr>';
+        return;
+      }
+
+      // 1️⃣ Собираем все дисциплины, по которым есть хоть один результат
+      const allEvents = new Set();
+      data.forEach(c => {
+        Object.keys(c.scores || {}).forEach(e => allEvents.add(e));
+      });
+      const events = Array.from(allEvents);
+
+      // 2️⃣ Строим заголовок таблицы динамически
+      const headerRow = `
         <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          ${events.map(e => `<th>${e}</th>`).join('')}
+          <th>Total</th>
+        </tr>
+      `;
+      el('standings').previousElementSibling.innerHTML = headerRow; // обновляем <thead>
+
+      // 3️⃣ Строим строки с данными
+      const rows = data.map((c, i) => `
+        <tr>
+          <td>${i + 1}</td>
           <td>${c.name}</td>
-          ${columnOrder.map(ev => `<td>${c.scores?.[ev] ?? ''}</td>`).join('')}
+          ${events.map(e => `<td>${c.scores?.[e] ?? ''}</td>`).join('')}
           <td>${c.total ?? 0}</td>
         </tr>
       `).join('');
@@ -58,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setError('Failed to load standings');
     }
   }
+
 
   // Event Listeners
   el('category').addEventListener('change', () => updateEventOptions(el('category').value));
