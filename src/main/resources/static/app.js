@@ -95,6 +95,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const event = el('event').value;
     const raw = parseFloat(el('raw').value);
 
+    const nameRegex = /^[A-Za-zÅÄÖåäö\s]+$/;
+        if (!nameRegex.test(name)) {
+         setError('Invalid input – you can only enter letters');
+         return;
+  }
+
+
     if (!name || !event || isNaN(raw)) {
       setError('Enter name, select event and input a valid result');
       return;
