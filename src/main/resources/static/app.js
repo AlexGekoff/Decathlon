@@ -44,10 +44,35 @@ document.addEventListener('DOMContentLoaded', () => {
       const res = await fetch('/api/standings');
       const data = await res.json();
 
-      const rows = data.map(c => `
+      if (!data.length) {
+        el('standings').innerHTML = '<tr><td colspan="2">No competitors yet</td></tr>';
+        return;
+      }
+
+      // 1️⃣ Собираем все дисциплины, по которым есть хоть один результат
+      const allEvents = new Set();
+      data.forEach(c => {
+        Object.keys(c.scores || {}).forEach(e => allEvents.add(e));
+      });
+      const events = Array.from(allEvents);
+
+      // 2️⃣ Строим заголовок таблицы динамически
+      const headerRow = `
         <tr>
+          <th>Rank</th>
+          <th>Name</th>
+          ${events.map(e => `<th>${e}</th>`).join('')}
+          <th>Total</th>
+        </tr>
+      `;
+      el('standings').previousElementSibling.innerHTML = headerRow; // обновляем <thead>
+
+      // 3️⃣ Строим строки с данными
+      const rows = data.map((c, i) => `
+        <tr>
+          <td>${i + 1}</td>
           <td>${c.name}</td>
-          ${columnOrder.map(ev => `<td>${c.scores?.[ev] ?? ''}</td>`).join('')}
+          ${events.map(e => `<td>${c.scores?.[e] ?? ''}</td>`).join('')}
           <td>${c.total ?? 0}</td>
         </tr>
       `).join('');
@@ -59,36 +84,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+
   // Event Listeners
   el('category').addEventListener('change', () => updateEventOptions(el('category').value));
 
-  el('add').addEventListener('click', async () => {
-    const name = el('name').value.trim();
-    if (!name) { setError('Enter a name'); return; }
 
-    try {
-      const res = await fetch('/api/competitors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        setError(t || 'Failed to add competitor');
-      } else {
-        setMsg(`Competitor "${name}" added`);
-        el('name').value = '';
-      }
-      await renderStandings();
-    } catch (e) {
-      setError('Network error');
-    }
-  });
 
   el('save').addEventListener('click', async () => {
     const name = el('name2').value.trim();
     const event = el('event').value;
     const raw = parseFloat(el('raw').value);
+
+    const nameRegex = /^[A-Za-zÅÄÖåäö\s]+$/;
+        if (!nameRegex.test(name)) {
+         setError('Invalid input – you can only enter letters');
+         return;
+  }
+
 
     if (!name || !event || isNaN(raw)) {
       setError('Enter name, select event and input a valid result');
