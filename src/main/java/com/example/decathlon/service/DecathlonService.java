@@ -29,7 +29,16 @@ public class DecathlonService {
     }
 
     public WebCompetitor addScore(String name, String event, double raw) {
-        WebCompetitor competitor = findCompetitorByName(name);
+        WebCompetitor competitor = competitors.stream()
+                .filter(c -> c.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElseGet(() -> {
+                    // 🔹 автоматическое создание, если не найден
+                    WebCompetitor newComp = new WebCompetitor(name);
+                    competitors.add(newComp);
+                    return newComp;
+                });
+
         int calculatedScore = 0;
 
         try {

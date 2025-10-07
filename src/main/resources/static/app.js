@@ -88,28 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Listeners
   el('category').addEventListener('change', () => updateEventOptions(el('category').value));
 
-  el('add').addEventListener('click', async () => {
-    const name = el('name').value.trim();
-    if (!name) { setError('Enter a name'); return; }
 
-    try {
-      const res = await fetch('/api/competitors', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name })
-      });
-      if (!res.ok) {
-        const t = await res.text();
-        setError(t || 'Failed to add competitor');
-      } else {
-        setMsg(`Competitor "${name}" added`);
-        el('name').value = '';
-      }
-      await renderStandings();
-    } catch (e) {
-      setError('Network error');
-    }
-  });
 
   el('save').addEventListener('click', async () => {
     const name = el('name2').value.trim();
