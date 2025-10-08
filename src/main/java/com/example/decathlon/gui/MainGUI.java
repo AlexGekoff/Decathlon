@@ -114,6 +114,14 @@ public class MainGUI {
         @Override
         public void actionPerformed(ActionEvent e) {
             String name = nameField.getText();
+
+            if (!name.matches("^[a-zA-Z]+$")) {
+                JOptionPane.showMessageDialog(null,
+                        "The Name field can contain only letters",
+                        "Invalid Input",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
             String discipline = (String) disciplineBox.getSelectedItem();
             String resultText = resultField.getText();
 
