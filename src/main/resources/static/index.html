@@ -22,7 +22,7 @@
     <h2>Enter result</h2>
     <div class="row">
         <label for="name2">Name</label>
-        <input id="name2" placeholder="same as above" />
+        <input id="name2" name="name" autocomplete="name" placeholder="same as above" />
 
         <label for="category">Discipline</label>
         <select id="category">
@@ -47,11 +47,15 @@
 
 <div class="card">
     <h2>Standings</h2>
+    <div class="row">
+        <button id="export">Export</button>
+    </div>
     <table>
         <thead></thead>
         <tbody id="standings"></tbody>
     </table>
 </div>
+
 
 <script src="app.js" type="module"></script>
 </body>

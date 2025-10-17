@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
     "Hep_LongJump","Hep_ShotPut","Hep_JavelinThrow"
   ];
 
-  // Kolumnordning i tabellen
   const columnOrder = [
     "Hep_200m","Hep_800m","Hep_100mHurdles","Hep_HighJump",
     "Hep_LongJump","Hep_ShotPut","Hep_JavelinThrow",
@@ -39,24 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  async function fetchStandings() {
+    const res = await fetch('/api/standings');
+    if (!res.ok) throw new Error('failed');
+    return res.json();
+  }
+
   async function renderStandings() {
     try {
-      const res = await fetch('/api/standings');
-      const data = await res.json();
+      const data = await fetchStandings();
 
       if (!data.length) {
         el('standings').innerHTML = '<tr><td colspan="2">No competitors yet</td></tr>';
+        el('standings').previousElementSibling.innerHTML = '';
         return;
       }
 
-      // 1️⃣ Собираем все дисциплины, по которым есть хоть один результат
       const allEvents = new Set();
       data.forEach(c => {
         Object.keys(c.scores || {}).forEach(e => allEvents.add(e));
       });
-      const events = Array.from(allEvents);
 
-      // 2️⃣ Строим заголовок таблицы динамически
+      const ordered = [...decathlonEvents, ...heptathlonEvents].filter(e => allEvents.has(e));
+      const events = ordered.length ? ordered : Array.from(allEvents);
+
       const headerRow = `
         <tr>
           <th>Rank</th>
@@ -65,10 +70,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <th>Total</th>
         </tr>
       `;
-      el('standings').previousElementSibling.innerHTML = headerRow; // обновляем <thead>
+      el('standings').previousElementSibling.innerHTML = headerRow;
 
-      // 3️⃣ Строим строки с данными
-      const rows = data.map((c, i) => `
+      const sorted = [...data].sort((a,b) => (b.total||0) - (a.total||0));
+      const rows = sorted.map((c, i) => `
         <tr>
           <td>${i + 1}</td>
           <td>${c.name}</td>
@@ -84,11 +89,63 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function toCSV(rows) {
+    return rows.map(r => r.map(v => {
+      const s = v == null ? '' : String(v);
+      if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`;
+      }
+      return s;
+    }).join(',')).join('\n');
+  }
 
-  // Event Listeners
+  async function exportCSV() {
+    try {
+      const data = await fetchStandings();
+      if (!data.length) {
+        setError('No data to export');
+        return;
+      }
+
+      const present = new Set();
+      data.forEach(c => Object.keys(c.scores || {}).forEach(e => present.add(e)));
+
+      const orderedEvents = [...decathlonEvents, ...heptathlonEvents].filter(e => present.has(e));
+      const usedEvents = orderedEvents;
+
+      const sorted = [...data].sort((a,b) => (b.total||0) - (a.total||0));
+
+      const header = ["Rank","Name",...usedEvents,"Total Score"];
+      const rows = [header];
+
+      let rank = 1;
+      for (const c of sorted) {
+        const r = [rank, c.name];
+        for (const ev of usedEvents) {
+          r.push(c.scores && ev in c.scores ? c.scores[ev] : '');
+        }
+        r.push(c.total ?? 0);
+        rows.push(r);
+        rank++;
+      }
+
+      const csv = toCSV(rows);
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'standings.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setMsg('Exported standings');
+    } catch (e) {
+      setError('Export failed');
+    }
+  }
+
   el('category').addEventListener('change', () => updateEventOptions(el('category').value));
-
-
 
   el('save').addEventListener('click', async () => {
     const name = el('name2').value.trim();
@@ -96,11 +153,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const raw = parseFloat(el('raw').value);
 
     const nameRegex = /^[A-Za-zÅÄÖåäö\s]+$/;
-        if (!nameRegex.test(name)) {
-         setError('Invalid input – you can only enter letters');
-         return;
-  }
-
+    if (!nameRegex.test(name)) {
+      setError('Invalid input – you can only enter letters');
+      return;
+    }
 
     if (!name || !event || isNaN(raw)) {
       setError('Enter name, select event and input a valid result');
@@ -132,7 +188,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Initial render
+  el('export').addEventListener('click', exportCSV);
+
   updateEventOptions('');
   renderStandings();
 

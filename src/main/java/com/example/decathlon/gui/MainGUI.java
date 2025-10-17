@@ -1,12 +1,8 @@
 package com.example.decathlon.gui;
 
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,17 +12,15 @@ import java.util.Map;
 import com.example.decathlon.common.ValidationUtil;
 import com.example.decathlon.deca.*;
 import com.example.decathlon.heptathlon.*;
-
+import com.example.decathlon.excel.ExcelPrinter;
 
 public class MainGUI {
 
     private JTextField nameField;
     private JTextField resultField;
     private JComboBox<String> disciplineBox;
-
     private JTextArea outputArea;
     private JComboBox<String> disciplineCategoryBox;
-
     private Map<String, Competitor> competitors = new HashMap<>();
 
     private final String[] decathlonDisciplines = {
@@ -47,35 +41,29 @@ public class MainGUI {
     private void createAndShowGUI() {
         JFrame frame = new JFrame("Track and Field Calculator");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 400);
+        frame.setSize(500, 500);
 
-        JPanel panel = new JPanel(new GridLayout(7, 1)); // 7 rader för alla komponenter
+        JPanel panel = new JPanel(new GridLayout(9, 1));
 
-        // Input för tävlandes namn
         nameField = new JTextField(20);
         panel.add(new JLabel("Enter Competitor's Name:"));
         panel.add(nameField);
 
-        // Dropdown för att välja disciplin-kategori (tom som start)
-        String[] categories = {"", "Decathlon", "Heptathlon"}; // tom sträng först
+        String[] categories = {"", "Decathlon", "Heptathlon"};
         disciplineCategoryBox = new JComboBox<>(categories);
         panel.add(new JLabel("Select Discipline:"));
         panel.add(disciplineCategoryBox);
 
-        // Dropdown för grenarna (disciplineBox) – börjar tom
         disciplineBox = new JComboBox<>();
         panel.add(new JLabel("Select Event:"));
         panel.add(disciplineBox);
 
-        // När kategori ändras -> uppdatera grenlistan
         disciplineCategoryBox.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String selectedCategory = (String) disciplineCategoryBox.getSelectedItem();
-                disciplineBox.removeAllItems(); //// töm listan
-
+                disciplineBox.removeAllItems();
                 disciplineBox.addItem("");
-
                 if ("Decathlon".equals(selectedCategory)) {
                     for (String d : decathlonDisciplines) {
                         disciplineBox.addItem(d);
@@ -88,17 +76,70 @@ public class MainGUI {
             }
         });
 
-        // Input för resultat
         resultField = new JTextField(10);
         panel.add(new JLabel("Enter Result:"));
         panel.add(resultField);
 
-        // Knapp för att räkna ut resultat
         JButton calculateButton = new JButton("Calculate Score");
         calculateButton.addActionListener(new CalculateButtonListener());
         panel.add(calculateButton);
 
-        // Output area
+        JButton exportButton = new JButton("Export to Excel");
+        exportButton.addActionListener(ae -> {
+            JFrame f = (JFrame) SwingUtilities.getWindowAncestor((Component) ae.getSource());
+            if (competitors.isEmpty()) {
+                JOptionPane.showMessageDialog(f, "No data to export.");
+                return;
+            }
+            try {
+                List<String> orderedEvents = new ArrayList<>();
+                for (String d : decathlonDisciplines) orderedEvents.add(d);
+                for (String d : heptathlonDisciplines) orderedEvents.add(d);
+
+                List<String> usedEvents = new ArrayList<>();
+                for (String ev : orderedEvents) {
+                    boolean present = false;
+                    for (Competitor c : competitors.values()) {
+                        if (c.getResults().containsKey(ev)) { present = true; break; }
+                    }
+                    if (present) usedEvents.add(ev);
+                }
+
+                List<Competitor> sorted = new ArrayList<>(competitors.values());
+                sorted.sort((c1, c2) -> Integer.compare(c2.getTotalScore(), c1.getTotalScore()));
+
+                List<Object[]> rows = new ArrayList<>();
+                List<Object> header = new ArrayList<>();
+                header.add("Rank");
+                header.add("Name");
+                header.addAll(usedEvents);
+                header.add("Total Score");
+                rows.add(header.toArray(new Object[0]));
+
+                int rank = 1;
+                for (Competitor c : sorted) {
+                    List<Object> r = new ArrayList<>();
+                    r.add(rank);
+                    r.add(c.getName());
+                    for (String ev : usedEvents) {
+                        Competitor.DisciplineResult dr = c.getResults().get(ev);
+                        r.add(dr == null ? "" : dr.score);
+                    }
+                    r.add(c.getTotalScore());
+                    rows.add(r.toArray(new Object[0]));
+                    rank++;
+                }
+
+                ExcelPrinter printer = new ExcelPrinter("standings");
+                printer.add(rows.toArray(new Object[0][]), "Standings");
+                printer.write();
+                JOptionPane.showMessageDialog(f, "Exported to Excel.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(f, "Export failed: " + ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        panel.add(exportButton);
+
         outputArea = new JTextArea(5, 40);
         outputArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(outputArea);
@@ -108,26 +149,38 @@ public class MainGUI {
         frame.setVisible(true);
     }
 
-
+    private static String toTitleCase(String s) {
+        String[] parts = s.trim().toLowerCase().split("\\s+");
+        StringBuilder b = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (parts[i].isEmpty()) continue;
+            b.append(Character.toUpperCase(parts[i].charAt(0)));
+            if (parts[i].length() > 1) b.append(parts[i].substring(1));
+            if (i < parts.length - 1) b.append(" ");
+        }
+        return b.toString();
+    }
 
     private class CalculateButtonListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String name = nameField.getText();
-
-            if (!name.matches("^[a-zA-Z]+$")) {
+            String rawName = nameField.getText();
+            if (rawName == null) rawName = "";
+            if (!rawName.trim().matches("^[A-Za-z ]+$")) {
                 JOptionPane.showMessageDialog(null,
-                        "The Name field can contain only letters",
+                        "The Name field can contain only letters and spaces",
                         "Invalid Input",
                         JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            String name = toTitleCase(rawName);
+
             String discipline = (String) disciplineBox.getSelectedItem();
             String resultText = resultField.getText();
+            String normalized = resultText == null ? "" : resultText.replace(',', '.');
 
             try {
-                double result = Double.parseDouble(resultText);
-
+                double result = Double.parseDouble(normalized);
                 int score = 0;
 
                 switch (discipline) {
@@ -184,7 +237,7 @@ public class MainGUI {
                         score = new Hep800M().calculateResult(result);
                         break;
                     case "Hep_HightJump":
-                        ValidationUtil.validateResult("Hep High Jump", result, 0,300);
+                        ValidationUtil.validateResult("Hep High Jump", result, 0, 300);
                         score = new HeptHightJump().calculateResult(result);
                         break;
                     case "Hep_JavelinThrow":
@@ -201,23 +254,24 @@ public class MainGUI {
                         break;
                 }
 
-                // Update or add competitor
-                Competitor competitor = competitors.getOrDefault(name, new Competitor(name));
+                Competitor competitor = competitors.get(name);
+                if (competitor == null) {
+                    competitor = new Competitor(name);
+                }
                 competitor.addScore(discipline, result, score);
                 competitors.put(name, competitor);
 
-                // Sort competitors
                 List<Competitor> sortedCompetitors = new ArrayList<>(competitors.values());
                 sortedCompetitors.sort((c1, c2) -> Integer.compare(c2.getTotalScore(), c1.getTotalScore()));
 
-                // Build output
                 StringBuilder output = new StringBuilder();
                 int rank = 1;
                 for (Competitor c : sortedCompetitors) {
                     output.append(rank).append(". ").append(c.getName())
                             .append(" - Total Score: ").append(c.getTotalScore()).append("\n");
                     for (Map.Entry<String, Competitor.DisciplineResult> entry : c.getResults().entrySet()) {
-                        output.append("   ").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+                        Competitor.DisciplineResult dr = entry.getValue();
+                        output.append("   ").append(entry.getKey()).append(": ").append(dr.score).append("\n");
                     }
                     output.append("\n");
                     rank++;
@@ -237,4 +291,5 @@ public class MainGUI {
                         JOptionPane.ERROR_MESSAGE);
             }
         }
-    }}
+    }
+}
