@@ -1,5 +1,4 @@
 package com.example.decathlon.Auto;
-
 import io.cucumber.java.en.*;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -41,7 +40,6 @@ public class MainWeb {
         }
         //bestämmer storleken på webbpage/Browsern standard maximize setSize kräver olika dimensioner
         driver.manage().window().maximize();
-
         // driver.manage().window().setSize(new Dimension(375, 667))
         return driver;
 
@@ -50,5 +48,15 @@ public class MainWeb {
     public static void waitForElementToBeVisible(By locator) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
         wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
-    }}
+    }
+    //Kod ifall man behöver stänga av webbläsaren efter varje testfall
+    public static void quitDriver() {
+        if (driver != null) {
+            driver.quit();
+            driver = null;
+        }
+    }
+
+}
+
 
