@@ -1,6 +1,6 @@
 package com.example.decathlon.Athletes;
 
-import org.example.athletes.Athletes.RandomAthletes;
+import com.example.decathlon.Athletes.RandomAthletes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
