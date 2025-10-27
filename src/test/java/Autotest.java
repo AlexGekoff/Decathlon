@@ -282,10 +282,10 @@ public class Autotest {
 
                 }
 
-                beginCount++;
 
 
-            }
+
+            } beginCount++;
 
         }
     }
