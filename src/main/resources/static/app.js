@@ -22,6 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
     "Dec_110mHurdles","Dec_HighJump","Dec_100m","Dec_LongJump","Dec_ShotPut","Dec_400m"
   ];
 
+  const trackEvents = new Set([
+    "Dec_100m","Dec_400m","Dec_1500m","Dec_110mHurdles",
+    "Hep_100mHurdles","Hep_200m","Hep_800m"
+  ]);
+  const jumpEvents = new Set([
+    "Dec_LongJump","Dec_HighJump","Dec_PoleVault",
+    "Hep_LongJump","Hep_HighJump"
+  ]);
+  const throwEvents = new Set([
+    "Dec_DiscusThrow","Dec_JavelinThrow","Dec_ShotPut",
+    "Hep_JavelinThrow","Hep_ShotPut"
+  ]);
+
   function setError(text) { err.textContent = text; }
   function setMsg(text) { msg.textContent = text; err.textContent = ''; }
 
@@ -145,12 +158,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  el('category').addEventListener('change', () => updateEventOptions(el('category').value));
+  function isValidFormat(evId, s) {
+    if (jumpEvents.has(evId)) return /^\d+$/.test(s);
+    return /^\d+([.,]\d{1,2})?$/.test(s);
+  }
+
+  function normalizeResultInput(evId, val) {
+    if (val == null) return NaN;
+    const raw = String(val).trim();
+    if (!isValidFormat(evId, raw)) return NaN;
+    const s = raw.replace(',', '.');
+    if (jumpEvents.has(evId)) return parseInt(s, 10);
+    return parseFloat(s);
+  }
+
+  el('category').addEventListener('change', () => {
+    updateEventOptions(el('category').value);
+    el('event').value = '';
+    el('raw').value = '';
+    el('raw').removeAttribute('pattern');
+    el('raw').setAttribute('step','any');
+  });
+
+  el('event').addEventListener('change', () => {
+    const event = el('event').value;
+    if (jumpEvents.has(event)) {
+      el('raw').setAttribute('step','1');
+      el('raw').setAttribute('pattern','\\d+');
+    } else {
+      el('raw').setAttribute('step','0.01');
+      el('raw').setAttribute('pattern','\\d+(?:[\\.,]\\d{1,2})?');
+    }
+    el('raw').value = '';
+  });
 
   el('save').addEventListener('click', async () => {
     const name = el('name2').value.trim();
+    const category = el('category').value;
     const event = el('event').value;
-    const raw = parseFloat(el('raw').value);
+    const rawInput = el('raw').value;
 
     const nameRegex = /^[A-Za-zÅÄÖåäö\s]+$/;
     if (!nameRegex.test(name)) {
@@ -158,8 +204,31 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    if (!name || !event || isNaN(raw)) {
-      setError('Enter name, select event and input a valid result');
+    if (!category || !event || rawInput === '') {
+      setError('Please select a discipline, event and enter a result before saving');
+      return;
+    }
+
+    if (!isValidFormat(event, rawInput.trim())) {
+      setError('Please select a discipline, event and enter a result before saving');
+      return;
+    }
+
+    const raw = normalizeResultInput(event, rawInput);
+    if (Number.isNaN(raw)) {
+      setError('Please select a discipline, event and enter a result before saving');
+      return;
+    }
+
+    try {
+      const data = await fetchStandings();
+      const names = new Set(data.map(c => c.name));
+      if (!names.has(name) && data.length >= 40) {
+        setError('Too many competitors (max 40)');
+        return;
+      }
+    } catch (e) {
+      setError('Failed to load standings');
       return;
     }
 
